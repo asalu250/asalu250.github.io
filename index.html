@@ -374,8 +374,8 @@
         <polyline points="0,10 20,10 20,44 40,44 40,10 60,10 60,44 80,44 80,10 100,10 100,44 120,44 120,10 140,10 140,44 160,44 160,10 180,10 180,44 200,44 200,10 220,10 220,44 240,44 240,10 260,10"
           fill="none" stroke="#2E4A63" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
       </svg>
-      <h4>FPGA-Based Biomedical Signal Processor</h4>
-      <p>An 8-bit ALU and 4-register file in Verilog, validated with self-checking testbenches, plus a custom 2-address instruction format and 16-word instruction ROM. Control unit for fetch-decode-execute in progress, targeting an Intel DE10-Lite for real-time ECG/EMG processing.</p>
+      <h4>Custom 8-Bit RISC CPU on Intel DE10-Lite FPGA</h4>
+      <p>Architected and synthesized an 8-bit single-cycle processor with a custom ISA, a 4-register dual-port register file, ALU, and dedicated control unit on an Altera MAX 10 FPGA. Verified the datapath with Icarus Verilog testbenches and EPWave waveforms, then resolved edge-case bugs (instruction aliasing, PC free-running display flicker) to get steady execution outputs mapped to 7-segment and LED displays.</p>
       <div class="tags">
         <span class="tag mono">verilog</span>
         <span class="tag mono">quartus prime</span>
@@ -429,15 +429,15 @@
     <summary>
       <div class="note-head">
         <div class="note-ch mono">NOTE.02</div>
-        <div class="note-title">Designing an ALU before I'd ever touched an FPGA board</div>
-        <div class="note-sub">Build notes on the biomedical signal processor: ALU, register file, and the instruction set underneath it</div>
+        <div class="note-title">Building a working 8-bit CPU on an FPGA, bug by bug</div>
+        <div class="note-sub">Build notes on the custom RISC CPU: ALU, register file, and getting it actually running</div>
       </div>
       <div class="note-arrow mono">＞</div>
     </summary>
     <div class="note-body">
-      <p>I started this project wanting to process ECG/EMG signals in real time on an FPGA, which sounds like a DSP problem: filters, sampling, maybe an FFT. It isn't, not at first. Before any of that can run, something has to fetch, decode, and execute instructions. So the actual starting point was building a small CPU: an 8-bit ALU with ADD, SUB, AND, OR and zero/carry flags, and a 4-register file with dual-port reads and gated synchronous writes.</p>
-      <p>The part that forced the most discipline was verification. It's easy to write Verilog that looks right and is quietly wrong on an edge case: a carry flag that doesn't propagate correctly, a write that races a read on the same cycle. Self-checking testbenches caught more of those than I'd like to admit, which is exactly the point: in hardware, you don't get a stack trace, you get a waveform and a guess.</p>
-      <p>From there I defined a compact 2-address instruction format and a 16-word instruction ROM, small enough to hand-assemble, which was deliberate. I wanted to understand every bit of every instruction before reaching for a toolchain that would hide that from me. The control unit for fetch-decode-execute is what I'm building now, and the target is an Intel DE10-Lite with an on-die ADC, chosen specifically so the next phase can pull in a real analog signal and process it on hardware I built from the ALU up, not just simulate it.</p>
+      <p>I started this project wanting to process ECG/EMG signals in real time on an FPGA, which sounds like a DSP problem: filters, sampling, maybe an FFT. It isn't, not at first. Before any of that can run, something has to fetch, decode, and execute instructions. So the actual starting point was building a small CPU from scratch: an 8-bit single-cycle processor with a custom ISA, a 4-register dual-port register file, an ALU, and a dedicated control unit, targeting an Altera MAX 10 on the DE10-Lite.</p>
+      <p>The part that forced the most discipline was verification. It's easy to write Verilog that looks right and is quietly wrong on an edge case. I derived the unit logic and full system datapath against Icarus Verilog testbenches and read every clock cycle back out as EPWave waveforms, down to confirming a single register write-back like 5 + 3 = 8 actually landed on the right cycle.</p>
+      <p>Getting it synthesized was one thing; getting it to run cleanly on real hardware was another. I hit real edge-case bugs, instruction aliasing where two different encodings were quietly resolving to the same operation, and a program counter that free-ran and flickered the display instead of holding steady. Chasing those down was most of the last month of the project. It's running now, with execution output mapped cleanly to the 7-segment and LED displays, which means the next phase can actually start: pulling a real analog signal into hardware I built from the ALU up, not just simulating it.</p>
     </div>
   </details>
 
@@ -465,11 +465,11 @@
   </div>
   <div class="about-grid">
     <p>
-      Hi, I'm Arnav Salu, and it's nice to meet you. I'm a hardware student at heart, but I've always been inspired by my mother's
-      work as a nurse in the medical field. Listening to her stories about people's struggles with having proper healthcare,
-      I made it my personal goal to make medical technology affordable for everyone. Medicine and technology are the biggest 
-      disciplines in the world, and they should be an equal opportunity for everyone. Outside of work, I love reading Greek mythology
-      and playing pickup soccer. I also love eating anything and everything, dragging my brothers and friends to every new spot I find.
+      Hi, I'm Arnav Salu. I'm a hardware student at heart, but I've always been inspired by my mother'swork as a nurse in 
+      the medical field. Listening to her stories about people's struggles with having proper healthcare, I made it my 
+      personal goal to make medical technology affordable for everyone. Medicine and technology are the biggest disciplines in the 
+      world, and they should be an equal opportunity for everyone. Outside of work, I love reading Greek mythology and playing 
+      pickup soccer. I also love eating anything and everything, dragging my brothers and friends to every new spot I find.
     </p>
     <div class="about-side">
       <div class="row"><span>Focus</span><span>biomedical devices · FPGAs · embedded systems</span></div>
