@@ -349,7 +349,7 @@
 <section class="block" id="signals">
   <div class="sec-head">
     <h3>Signals</h3>
-    <div class="count mono">4 traces</div>
+    <div class="count mono">3 traces</div>
   </div>
 
   <div class="signal-grid">
@@ -406,12 +406,56 @@
 <section class="block" id="notes">
   <div class="sec-head">
     <h3>Notes</h3>
-    <div class="count mono">0 entries</div>
+    <div class="count mono">3 entries</div>
   </div>
-  <div class="empty mono">
-    <b>NO ENTRIES LOGGED YET</b>
-    Write-ups on the CASAS pipeline, the digital-logic coursework, or anything else worth recording will show up here.
-  </div>
+
+  <details class="note-entry">
+    <summary>
+      <div class="note-head">
+        <div class="note-ch mono">NOTE.01</div>
+        <div class="note-title">What 3.7M sensor events taught me about behavioral deviation</div>
+        <div class="note-sub">On the CASAS smart-home project: features, model choice, and validating without ground truth</div>
+      </div>
+      <div class="note-arrow mono">＞</div>
+    </summary>
+    <div class="note-body">
+      <p>The hardest part of this project wasn't the modeling. It was deciding what "normal" even means for one household. Smart-home sensor logs don't come labeled with good days and bad days; they're just a stream of motion, door, and appliance events. Before any model could work, I had to turn 3.7M raw events into daily behavioral features that actually captured routine: timing of first movement, room-to-room transition patterns, activity duration, sleep-wake regularity, the kind of signal a person's daily rhythm actually lives in.</p>
+      <p>I trained five supervised models on those features with a chronological split, which mattered more than I expected going in: a random split would have let the model peek at patterns from days it should never have seen, and inflated every metric. SVM ended up the strongest, with an F1 of 0.67 and ROC-AUC of 0.88, ahead of the others by a real margin, not a rounding error.</p>
+      <p>The part I trust most, though, is what came after the "good" numbers: cross-checking flagged days against unsupervised methods that had no access to my labels at all. If both approaches, one supervised and opinionated, one blind, agreed that certain days looked structurally different from the rest, that's real evidence the deviations are there, not an artifact of how I built the features. That agreement is what turned this from "a model with decent metrics" into something I'd actually trust enough to alert a caregiver with, which is exactly what Hearth, the companion app, does.</p>
+    </div>
+  </details>
+
+  <details class="note-entry">
+    <summary>
+      <div class="note-head">
+        <div class="note-ch mono">NOTE.02</div>
+        <div class="note-title">Designing an ALU before I'd ever touched an FPGA board</div>
+        <div class="note-sub">Build notes on the biomedical signal processor: ALU, register file, and the instruction set underneath it</div>
+      </div>
+      <div class="note-arrow mono">＞</div>
+    </summary>
+    <div class="note-body">
+      <p>I started this project wanting to process ECG/EMG signals in real time on an FPGA, which sounds like a DSP problem: filters, sampling, maybe an FFT. It isn't, not at first. Before any of that can run, something has to fetch, decode, and execute instructions. So the actual starting point was building a small CPU: an 8-bit ALU with ADD, SUB, AND, OR and zero/carry flags, and a 4-register file with dual-port reads and gated synchronous writes.</p>
+      <p>The part that forced the most discipline was verification. It's easy to write Verilog that looks right and is quietly wrong on an edge case: a carry flag that doesn't propagate correctly, a write that races a read on the same cycle. Self-checking testbenches caught more of those than I'd like to admit, which is exactly the point: in hardware, you don't get a stack trace, you get a waveform and a guess.</p>
+      <p>From there I defined a compact 2-address instruction format and a 16-word instruction ROM, small enough to hand-assemble, which was deliberate. I wanted to understand every bit of every instruction before reaching for a toolchain that would hide that from me. The control unit for fetch-decode-execute is what I'm building now, and the target is an Intel DE10-Lite with an on-die ADC, chosen specifically so the next phase can pull in a real analog signal and process it on hardware I built from the ALU up, not just simulate it.</p>
+    </div>
+  </details>
+
+  <details class="note-entry">
+    <summary>
+      <div class="note-head">
+        <div class="note-ch mono">NOTE.03</div>
+        <div class="note-title">Why biomedical instrumentation is expensive, and what that has to do with OpenMed</div>
+        <div class="note-sub">The reasoning behind building a low-cost, modular EMG platform from the analog front end up</div>
+      </div>
+      <div class="note-arrow mono">＞</div>
+    </summary>
+    <div class="note-body">
+      <p>Clinical-grade biosignal acquisition hardware is expensive largely because of the analog front end: the amplification and filtering stage that has to pull a signal in the microvolt range out of noise, skin contact variance, and 60Hz interference, without corrupting it. Get the AFE wrong, and no amount of clever software downstream can recover the signal. That's the part that gets outsourced to expensive dedicated ICs in commercial devices, and it's the part I wanted to actually understand rather than treat as a black box.</p>
+      <p>OpenMed started as a question: how much of that cost is genuinely necessary, and how much is just what you pay for a closed, dedicated part instead of a semicustom design you evaluate yourself? So the project's been mostly about that evaluation: comparing semicustom and dedicated AFE architectures in LTspice, and actually characterizing gain, frequency response, noise, CMRR, and ADC performance instead of trusting a datasheet's best-case numbers.</p>
+      <p>The platform itself is a 2-channel differential EMG acquisition system, with a 2-layer KiCad PCB for the instrumentation amplification and filtering stage, feeding an embedded USB acquisition pipeline in Python for real-time visualization and RMS/envelope extraction. None of it is meant to replace clinical-grade equipment. It's meant to be modular and cheap enough that the acquisition side of biomedical signal processing stops being the bottleneck for anyone who wants to build on top of it, the way it was for me.</p>
+    </div>
+  </details>
 </section>
 
 <!-- ============ ABOUT ============ -->
@@ -421,11 +465,11 @@
   </div>
   <div class="about-grid">
     <p>
-      I'm an Electrical Engineering student at UC Davis (CS minor), drawn to the point where hardware
-      meets signal — biomedical instrumentation, FPGAs, BCI. At SAGE Lab I keep smart-home sensor networks
-      running for health-monitoring research; at Neurotech@Davis I build the acquisition pipelines that
-      turn EEG and EMG into real-time control. Outside of that I design my own instrumentation from the
-      transistor level up — PCB, firmware, and the software that reads the signal on the other end.
+      Hi, I'm Arnav Salu, and it's nice to meet you. I'm a hardware student at heart, but I've always been inspired by my mother's
+      work as a nurse in the medical field. Listening to her stories about people's struggles with having proper healthcare,
+      I made it my personal goal to make medical technology affordable for everyone. Medicine and technology are the biggest 
+      disciplines in the world, and they should be an equal opportunity for everyone. Outside of work, I love reading Greek mythology
+      and playing pickup soccer. I also love eating anything and everything, dragging my brothers and friends to every new spot I find.
     </p>
     <div class="about-side">
       <div class="row"><span>Focus</span><span>biomedical signal processing · FPGAs · embedded systems</span></div>
